@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='logo-mentah.ico') }}" type="image/x-icon" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://kit.fontawesome.com/de152fe019.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="../static/style.css"> -->
+    <title>Wisata | {{ attraction.name }}</title>
+</head>
+
+<script>
+
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            $('#preview_image').attr('src', e.target.result);
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    function toggleNavbar() {
+        let target = $('#navbarBasicExample');
+        $('.navbar-burger').toggleClass('is-active');
+        target.toggleClass('is-active');
+    }
+
+    function deletePost(postId) {
+        $.ajax({
+            url: '/wisata/' + postId,
+            type: 'DELETE',
+            success: function (response) {
+                console.log(response.message);
+                window.location.replace("/discover");
+                // window.location.reload();
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+            }
+        });
+    }
+    let attraction_id = '{{ attraction._id }}';
+    function book_ticket() {
+        let attraction_id = '{{ attraction._id }}';
+        let name = '';
+        let email = '';
+        let num_tickets = $("#num_tickets").val();
+        if (num_tickets == '') {
+            alert('Silahkan input jumlah tiket!')
+        } else {
+            {% if user_info %}
+            name = '{{ user_info.name }}';
+            email = '{{ user_info.email }}';
+            {% else %}
+            // Redirect to the login page
+            window.location.href = '/signin';
+            return;
+            {% endif %}
+
+            $.ajax({
+                type: "POST",
+                url: "/wisata/book",
+                data: {
+                    attraction_id: attraction_id,
+                    name: name,
+                    email: email,
+                    num_tickets: num_tickets
+                },
+                success: function (response) {
+                    alert(response.message);
+                    window.location.reload()
+                },
+                error: function (response) {
+                    alert(response.message);
+                }
+            })
+        }
+
+    }
+
+    function editWisata(id) {
+        let name = $('#name').val();
+        let description = $('#description').val();
+        let location = $('#location').val();
+        let price = $('#price').val();
+        let total_tickets = $('#total_tickets').val();
+        let image_wisata = $('#image_wisata').prop('files')[0];
+
+        if (name === '' || description === '' || location === '' || price === '' || total_tickets === '') {
+            alert('Data tidak lengkap');
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append('name', name);
+        formData.append('description', description);
+        formData.append('location', location);
+        formData.append('price', price);
+        formData.append('total_tickets', total_tickets);
+        formData.append('image_wisata', image_wisata);
+
+        $.ajax({
+            url: '/wisata/' + id,
+            type: 'PUT',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                window.location.reload();
+            },
+            error: function (xhr, status, error) {
+                alert('Error: ' + error);
+            }
+        });
+    }
+</script>
+<style>
+    .is-preview {
+        border-radius: 20px;
+        width: 500px;
+        height: auto;
+        margin: 0 auto;
+        display: block;
+        max-width: 100%;
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+<body>
+    <div class="nav">
+        <nav class="navbar" id="navbar" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">
+                    <img src="../static/WisataKitaGreen.png" alt="" class="title is-4 is-logo">
+                </a>
+
+                <!-- Toggle button for mobile -->
+                <a role="button" class="navbar-burger is-light" aria-label="menu" aria-expanded="false"
+                    data-target="navbarBasicExample" onclick="toggleNavbar()">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarBasicExample" class="navbar-menu">
+                <div class="navbar-start navbar-center">
+                    <a class="navbar-item home" href="/">Home</a>
+                    <a class="navbar-item" href="/discover">Discover</a>
+                    {% if logged_in %}
+                    {% if is_admin %}
+                    <a class="navbar-item" href="/wisata/bookings">Cek Pesanan</a>
+                    {% else %}
+                    <a class="navbar-item" href="/cekpesanan/{{user_info.name}}">Cek Pesanan</a>
+                    {% endif %}
+                    {% endif %}
+                </div>
+
+                {% if not logged_in %}
+                <div class="navbar-end navbar-auth">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-masuk" href="/signin">Masuk</a>
+                            <a class="button is-daftar" href="/signup">Daftar</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if logged_in %}
+                <div class="navbar-end navbar-auth">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-user-info">{{ user_info.name }}</a>
+                            <a class="button is-btn-delete" onclick="sign_out()">Logout</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </nav>
+        <div class="content-main">
+            <div class="card is-shady">
+                <div class="card-image">
+                    <figure class="image is-fullwidth">
+                        <img src="/{{ attraction.image_wisata }}" alt="Image">
+                    </figure>
+                </div>
+                <div class="card-content">
+                    <div class="content">
+                        <p class="title is-4">{{ attraction.name }}</p>
+                        <p class="subtitle is-6">Lokasi: {{ attraction.location }}</p>
+                        <p class="subtitle is-6" style="font-weight: bold;">Harga satuan tiket : {{ attraction.price_rupiah }}
+                        </p>
+                        <p class="subtitle is-6" style="font-weight: bold;">Sisa tiket {{ attraction.total_tickets }}
+                        </p>
+                        <p style="text-align: justify;"> {{ attraction.description }}</p>
+                    </div>
+                    {% if is_admin %}
+                    <div class="field">
+                        <label class="label">Pilih opsi dibawah</label>
+                        <div class="control">
+                            <div class="field is-grouped">
+                                <p class="control">
+                                    <a class="button is-btn-regis is-fullwidth" onclick="openModal()">Edit</a>
+                                </p>
+                                <p class="control">
+                                    <a class="button is-btn-delete is-fullwidth"
+                                        onclick="deletePost(attraction_id)">Delete</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal modal-tambah is-centered is-overlay" id="modal">
+                        <div class="modal-content">
+                            <form>
+                                <!-- Your form fields go here -->
+                                <div class="field">
+                                    <label class="label">Nama Wisata</label>
+                                    <div class="control">
+                                        <input class="input is-input-reg" type="text" placeholder="Nama Wisata"
+                                            value="{{attraction.name}}" id="name">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label class="label">Lokasi</label>
+                                    <div class="control">
+                                        <input class="input is-input-reg" type="text" placeholder="Lokasi"
+                                            value="{{attraction.location}}" id="location">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label class="label">Foto Wisata</label>
+                                    <div class="control">
+                                        <img class="image is-preview" src="/{{attraction.image_wisata}}" alt=""
+                                            id="preview_image">
+                                        <input class="input is-input-reg" type="file" accept="image/*" id="image_wisata"
+                                            onchange="previewImage(event)">
+
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label class="label">Deskripsi</label>
+                                    <div class="control">
+                                        <textarea class="textarea is-input-reg" placeholder="Deskripsi"
+                                            id="description">{{attraction.description}}</textarea>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label class="label">Total Tiket</label>
+                                    <div class="control">
+                                        <input class="input is-input-reg" type="number" placeholder="Jumlah Tiket"
+                                            value="{{attraction.total_tickets}}" id="total_tickets">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label class="label">Harga Tiket</label>
+                                    <div class="control">
+                                        <input class="input is-input-reg" type="number" placeholder="Harga Tiket"
+                                            value="{{attraction.price}}" id="price">
+                                    </div>
+                                </div>
+                                <div class="field is-grouped">
+                                    <div class="control">
+                                        <button type="submit" class="button is-btn-regis"
+                                            onclick="editWisata(attraction_id)">Save</button>
+                                    </div>
+                                    <div class="control">
+                                        <button type="button" class="button is-light is-btn-cancel"
+                                            onclick="closeModal()">Cancel</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <button class="modal-close is-large" aria-label="close" id="modal-close"
+                            onclick="closeModal()"></button>
+                    </div>
+                    {% else %}
+                    <div class="field">
+                        <label class="label">Jumlah tiket yang ingin di booking.</label>
+                        <div class="control">
+                            <input class="input tiket_number" type="number" placeholder="Input jumlah tiket"
+                                id="num_tickets">
+                            <a class="button is-booking is-fullwidth" style="margin-top: 1.5rem;"
+                                onclick="book_ticket()">Submit</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="section footer">
+        <div class="container">
+            <div class="pb-5 is-flex is-flex-wrap-wrap is-justify-content-between is-align-items-center">
+                <div class="mr-auto mb-2">
+                    <a class="is-inline-block" href="/">
+                        <img class="image" src="../static/WisataKita.png" alt="" width="96px"></a>
+                </div>
+                <div>
+                    <ul class="is-flex is-flex-wrap-wrap is-align-items-center is-justify-content-center">
+                        <li class="mr-4"><a class="button is-footer-link" href="/">Home</a></li>
+                        <li class="mr-4"><a class="button is-footer-link" href="/discover">Discover</a></li>
+                        {% if logged_in %}
+                        {% if is_admin %}
+                        <li class="mr-4"><a class="button is-footer-link" href="/wisata/bookings">Cek Pesanan</a></li>
+                        {% else %}
+                        <li class="mr-4"><a class="button is-footer-link" href="/cekpesanan/{{user_info.name}}">Cek Pesanan</a></li>
+                        {% endif %}
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="pt-5" style="border-top: 1px solid #dee2e6;"></div>
+        <div class="container">
+            <div class="is-flex-tablet is-justify-content-between is-align-items-center">
+                <p>All rights reserved © WisataKita 2023</p>
+                <div class="py-2 is-hidden-tablet"></div>
+                <div class="ml-auto">
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/facebook-light.svg" alt=""></a>
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/twitter-light.svg" alt=""></a>
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/instagram-light.svg" alt=""></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

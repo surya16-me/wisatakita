@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WisataKita | Discover</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='logo-mentah.ico') }}" type="image/x-icon" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://kit.fontawesome.com/de152fe019.js" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.js"></script>
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="../static/style.css"> -->
+    <title>WisataKita | Discover</title>
+</head>
+<style>
+    .card-content {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+        overflow: hidden;
+    }
+
+    .card-content p {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        max-height: 3.6em;
+        line-height: 1.2em;
+    }
+</style>
+
+<script>
+    function toggleNavbar() {
+        let target = $('#navbarBasicExample');
+        $('.navbar-burger').toggleClass('is-active');
+        target.toggleClass('is-active');
+    }
+
+    $(document).ready(function () {
+        get_wisata();
+        bsCustomFileInput.init();
+    });
+
+    function simpan() {
+        let name = $('#name').val();
+        let description = $('#description').val();
+        let location = $('#location').val();
+        let price = $('#price').val();
+        let total_tickets = $('#total_tickets').val();
+        let image_wisata = $('#image_wisata')[0].files[0];
+
+        if (name == '' || description == '' || location == '' || price == '' || total_tickets == '') {
+            // Swal.fire(
+            //     'Oops',
+            //     'Data tidak lengkap!',
+            //     'error'
+            // )
+
+            alert('Data tidak lengkap')
+        } else {
+            let formData = new FormData();
+            formData.append('name', name);
+            formData.append('description', description);
+            formData.append('location', location);
+            formData.append('price', price);
+            formData.append('total_tickets', total_tickets);
+            formData.append('image_wisata', image_wisata);
+
+            $.ajax({
+                url: "/wisata",
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    window.location.reload();
+                }
+            });
+        }
+
+    }
+
+</script>
+
+<body>
+    <div class="nav">
+        <nav class="navbar" id="navbar" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">
+                    <img src="../static/WisataKitaGreen.png" alt="" class="title is-4 is-logo">
+                </a>
+
+                <!-- Toggle button for mobile -->
+                <a role="button" class="navbar-burger is-light" aria-label="menu" aria-expanded="false"
+                    data-target="navbarBasicExample" onclick="toggleNavbar()">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarBasicExample" class="navbar-menu">
+                <div class="navbar-start navbar-center">
+                    <a class="navbar-item home" href="/">Home</a>
+                    <a class="navbar-item" href="/discover">Discover</a>
+                    {% if logged_in %}
+                        {% if is_admin %}
+                        <a class="navbar-item" href="/wisata/bookings">Cek Pesanan</a>
+                        {% else %}
+                        <a class="navbar-item" href="/cekpesanan/{{user_info.name}}">Cek Pesanan</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                {% if not logged_in %}
+                <div class="navbar-end navbar-auth">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-masuk" href="/signin">Masuk</a>
+                            <a class="button is-daftar" href="/signup">Daftar</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if logged_in %}
+                <div class="navbar-end navbar-auth">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-user-info">{{ user_info.name }}</a>
+                            <a class="button is-btn-delete" onclick="sign_out()">Logout</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </nav>
+
+        <section class="hero is-small search-container">
+            <div class="hero-body has-text-centered">
+                <div id="hero-input-group" class="field has-addons has-addons-centered">
+                    <div class="control has-icons-right is-expanded">
+                        <input class="input is-medium search-bar" type="text" placeholder="Search..." id="searchInput"
+                            onkeypress="search(event)">
+                        <span class="icon is-right">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="content-main">
+        <section class="">
+            <div class="intro perintah">
+                {% if is_admin %}
+                <div class="columns features is-multiline">
+                    <h2 class="title column">Daftar Wisata</h2>
+                    <button class="button is-btn-regis is-pulled-right" onclick="openModal()"><span
+                            style="margin-right: 10px;"><i class="fa-sharp fa-solid fa-plus"></i></span>Tambah
+                        wisata</button>
+                </div>
+                <p class="subtitle is-6">Berikut daftar wisata yang sudah diinput</p>
+                <div class="modal modal-tambah is-centered is-overlay" id="modal">
+                    <div class="modal-content">
+                        <!-- <form> -->
+                            <!-- Your form fields go here -->
+                            <div class="field">
+                                <label class="label">Nama Wisata</label>
+                                <div class="control">
+                                    <input class="input is-input-reg" type="text" placeholder="Nama Wisata" id="name">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Lokasi</label>
+                                <div class="control">
+                                    <input class="input is-input-reg" type="text" placeholder="Lokasi" id="location">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Foto Wisata</label>
+                                <div class="control">
+                                    <input class="input is-input-reg" type="file" accept="image/*" id="image_wisata">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Deskripsi</label>
+                                <div class="control">
+                                    <textarea class="textarea is-input-reg" placeholder="Deskripsi"
+                                        id="description"></textarea>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Harga Tiket</label>
+                                <div class="control">
+                                    <input class="input is-input-reg" type="number" placeholder="Harga Tiket"
+                                        id="price">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Jumlah Tiket</label>
+                                <div class="control">
+                                    <input class="input is-input-reg" type="number" placeholder="Harga Tiket"
+                                        id="total_tickets">
+                                </div>
+                            </div>
+                            <div class="field is-grouped">
+                                <div class="control">
+                                    <button type="submit" class="button is-btn-regis" onclick="simpan()">Save</button>
+                                </div>
+                                <div class="control">
+                                    <button type="button" class="button is-light is-btn-cancel"
+                                        onclick="closeModal()">Cancel</button>
+                                </div>
+                            </div>
+                        <!-- </form> -->
+                    </div>
+                    <button class="modal-close is-large" aria-label="close" id="modal-close"
+                        onclick="closeModal()"></button>
+                </div>
+                {% else %}
+                <h2 class="title">Temukan destinasi menarik</h2>
+                <p class="subtitle is-6">Bingung mau healing kemana? Coba cari disini aja</p>
+                {% endif %}
+            </div>
+            <div class="columns features is-multiline" id="wisata-list">
+            </div>
+        </section>
+    </div>
+
+    <footer class="section footer">
+        <div class="container">
+            <div class="pb-5 is-flex is-flex-wrap-wrap is-justify-content-between is-align-items-center">
+                <div class="mr-auto mb-2">
+                    <a class="is-inline-block" href="/">
+                        <img class="image" src="../static/WisataKita.png" alt="" width="96px"></a>
+                </div>
+                <div>
+                    <ul class="is-flex is-flex-wrap-wrap is-align-items-center is-justify-content-center">
+                        <li class="mr-4"><a class="button is-footer-link" href="/">Home</a></li>
+                        <li class="mr-4"><a class="button is-footer-link" href="/discover">Discover</a></li>
+                        {% if logged_in %}
+                        {% if is_admin %}
+                        <li class="mr-4"><a class="button is-footer-link" href="/wisata/bookings">Cek Pesanan</a></li>
+                        {% else %}
+                        <li class="mr-4"><a class="button is-footer-link" href="/cekpesanan/{{user_info.name}}">Cek Pesanan</a></li>
+                        {% endif %}
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="pt-5" style="border-top: 1px solid #dee2e6;"></div>
+        <div class="container">
+            <div class="is-flex-tablet is-justify-content-between is-align-items-center">
+                <p>All rights reserved © WisataKita 2023</p>
+                <div class="py-2 is-hidden-tablet"></div>
+                <div class="ml-auto">
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/facebook-light.svg" alt=""></a>
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/twitter-light.svg" alt=""></a>
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/instagram-light.svg" alt=""></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

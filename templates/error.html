@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oops! Forbidden</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='logo-mentah.ico') }}" type="image/x-icon" />
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title is-2">Oops! Terlarang</h1>
+        <p class="subtitle is-4">Maaf, anda tidak memiliki hak untuk mengakses halaman tersebut!!.</p>
+        <p>Jika ada kesalahan silahkan hubungi CS WisataKita</p>
+        <a class="button is-btn-regis" href="javascript:history.back()">Kembali</a>
+    </div>
+</body>
+</html>

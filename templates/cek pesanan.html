@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='logo-mentah.ico') }}" type="image/x-icon" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="../static/style.css"> -->
+    <title>WisataKita | Cek Pesanan</title>
+</head>
+<script>
+    function toggleNavbar() {
+        let target = $('#navbarBasicExample');
+        $('.navbar-burger').toggleClass('is-active');
+        target.toggleClass('is-active');
+    }
+</script>
+<style>
+</style>
+
+<body>
+
+    <div class="nav">
+        <nav class="navbar" id="navbar" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="#">
+                    <img src="../static/WisataKitaGreen.png" alt="" class="title is-4 is-logo">
+                </a>
+
+                <!-- Toggle button for mobile -->
+                <a role="button" class="navbar-burger is-light" aria-label="menu" aria-expanded="false"
+                    data-target="navbarBasicExample" onclick="toggleNavbar()">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarBasicExample" class="navbar-menu">
+                <div class="navbar-start navbar-center">
+                    <a class="navbar-item home" href="/">Home</a>
+                    <a class="navbar-item" href="/discover">Discover</a>
+                    {% if logged_in %}
+                    <a class="navbar-item" href="/cekpesanan/{{user_info.name}}">Cek Pesanan</a>
+                    {% endif %}
+                </div>
+
+                {% if not logged_in %}
+                <div class="navbar-end navbar-auth">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-masuk" href="/signin">Masuk</a>
+                            <a class="button is-daftar" href="/signup">Daftar</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if logged_in %}
+                <div class="navbar-end navbar-auth">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-user-info">{{ user_info.name }}</a>
+                            <a class="button is-btn-delete" onclick="sign_out()">Logout</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </nav>
+        <div class="content-main">
+            <div class="intro perintah">
+                <h2 class="title">Pesanan tiket kamu</h2>
+                <p class="subtitle is-6">Pesananmu akan muncul disini!</p>
+            </div>
+            <div class="columns is-multiline">
+                {% if listbooking %}
+                {% for booking in listbooking %}
+                <div class="column is-4">
+                    <div class="card" style="height: 250px;">
+                        <div class="card-content">
+                            <div class="status-box
+                            {% if booking.status == 'Pending' %}
+                                status-box-pending
+                            {% elif booking.status == 'Cancel' %}
+                                status-box-cancel
+                            {% elif booking.status == 'Approve' %}
+                                status-box-approve
+                            {% endif %}">{{ booking.status }}</div>
+                            <p class="title is-4">{{ booking.wisata }}</p>
+                            <p>{{ booking.location }}</p>
+                            <p>Jumlah tiket : {{ booking.num_tickets }}</p>
+                            <p>Total Bayar : {{ booking.total_price }}</p>
+                            {% if booking.status == 'Approve' %}
+                            <a href="/generate_pdf/{{booking.id}}" class="button is-cetak">Cetak Tiket</a>
+                            {% else %}
+                            <button class="button is-disabled" disabled>Cetak Tiket</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="columns is-centered" style="width: 100%; margin-bottom: 5rem;">
+                    <div class="column is-fullwidth">
+                        <div class="card has-text-danger" style="background-color: blanchedalmond; border-radius: 40px;";>
+                            <div class="card-content">
+                                <h3 class="has-text-centered" style="font-weight: bold;">
+                                    Anda belum booking tiket
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>                          
+                {% endif %}
+                <!-- Add more columns with cards as needed -->
+            </div>
+
+        </div>
+    </div>
+    <footer class="section footer">
+        <div class="container">
+            <div class="pb-5 is-flex is-flex-wrap-wrap is-justify-content-between is-align-items-center">
+                <div class="mr-auto mb-2">
+                    <a class="is-inline-block" href="/">
+                        <img class="image" src="../static/WisataKita.png" alt="" width="96px"></a>
+                </div>
+                <div>
+                    <ul class="is-flex is-flex-wrap-wrap is-align-items-center is-justify-content-center">
+                        <li class="mr-4"><a class="button is-footer-link" href="/">Home</a></li>
+                        <li class="mr-4"><a class="button is-footer-link" href="/discover">Discover</a></li>
+                        {% if logged_in %}
+                        {% if is_admin %}
+                        <li class="mr-4"><a class="button is-footer-link" href="/wisata/bookings">Cek Pesanan</a></li>
+                        {% else %}
+                        <li class="mr-4"><a class="button is-footer-link" href="/cekpesanan/{{user_info.name}}">Cek Pesanan</a></li>
+                        {% endif %}
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="pt-5" style="border-top: 1px solid #dee2e6;"></div>
+        <div class="container">
+            <div class="is-flex-tablet is-justify-content-between is-align-items-center">
+                <p>All rights reserved © WisataKita 2023</p>
+                <div class="py-2 is-hidden-tablet"></div>
+                <div class="ml-auto">
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/facebook-light.svg" alt=""></a>
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/twitter-light.svg" alt=""></a>
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/instagram-light.svg" alt=""></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.7.0.js"
+        integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+    <title>Wisata Kita | Home</title>
+</head>
+<script>
+    $(document).ready(function () {
+        get_wisata();
+    });
+    function get_wisata() {
+        $.ajax({
+            url: "/wisata",
+            type: "GET",
+            dataType: "json",
+            success: function (response) {
+                let wisataList = response;
+                // Clear the existing content
+                $('#wisata-list').empty();
+
+                // Iterate over the wisataList and append the data to the div
+                for (let i = 0; i < wisataList.length; i++) {
+                    let attraction = wisataList[i];
+                    let html = '<div>';
+                    html += '<h3><a href="/wisata/' + attraction.id + '">' + attraction.name + '</a></h3>';
+                    html += '<p>' + attraction.description + '</p>';
+                    html += '<p>' + attraction.total_tickets + '</p>';
+                    html += '</div>';
+
+                    $('#wisata-list').append(html);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function simpan() {
+        let name = $('#name').val();
+        let description = $('#description').val();
+        let total_tickets = $('#total_tickets').val();
+
+        $.ajax({
+            url: "/wisata",
+            type: "POST",
+            data: {
+                name: name,
+                description: description,
+                total_tickets: total_tickets
+            },
+            dataType: "json",
+            success: function (response) {
+                $('#message').text(response.message);
+                $('#wisata-form')[0].reset(); // Reset the form
+                window.location.reload();
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            }
+        });
+
+    }
+</script>
+
+<body>
+    <p>{{ user_info.name }}</p>
+    {% if is_admin %}
+    <form id="wisata-form">
+        <label for="name">Name:</label>
+        <input type="text" id="name">
+
+        <label for="description">Description:</label>
+        <textarea id="description"></textarea>
+
+        <label for="total_tickets">Total Tickets:</label>
+        <input type="number" id="total_tickets">
+
+        <button onclick="simpan()" type="button">Simpan</button>
+    </form>
+    {% else %}
+    <h5><center>Not Admin</center></h5>
+    {% endif %}
+    <div id="message"></div>
+    <div id="wisata-list">
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Booking | Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='logo-mentah.ico') }}" type="image/x-icon" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://kit.fontawesome.com/de152fe019.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
+    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="../static/style.css"> -->
+</head>
+<script>
+    $(document).ready(function () {
+        $('#bookingTable').DataTable();
+    });
+    function toggleNavbar() {
+        let target = $('#navbarBasicExample');
+        $('.navbar-burger').toggleClass('is-active');
+        target.toggleClass('is-active');
+    }
+
+    function updateStatus(status, bookingId) {
+        // let bookingId = "{{ bookings.attraction_id }}"; // Replace with the actual booking ID
+
+        $.ajax({
+            url: '/wisata/bookings/' + bookingId,
+            type: 'PUT',
+            data: {
+                status: status
+            },
+            success: function (response) {
+                //console.log('Booking status updated successfully');
+                window.location.reload();
+            },
+            error: function (xhr, status, error) {
+                console.log('Error updating booking status:', error);
+            }
+        });
+    }
+</script>
+<style>
+    .card {
+        margin-bottom: 1rem;
+        border-radius: 30px;
+        background-color: wheat;
+    }
+
+    .btn-status-pending {
+        background-color: #ffdd57;
+        border: none;
+    }
+
+    .btn-status-cancel {
+        background-color: #fa2904;
+        border: none;
+        color: white;
+    }
+
+    .btn-status-approve {
+        background-color: #06a71b;
+        border: none;
+        color: white;
+    }
+</style>
+
+<body>
+    <div class="nav">
+        <nav class="navbar" id="navbar" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">
+                    <img src="../static/WisataKitaGreen.png" alt="" class="title is-4 is-logo">
+                </a>
+
+                <!-- Toggle button for mobile -->
+                <a role="button" class="navbar-burger is-light" aria-label="menu" aria-expanded="false"
+                    data-target="navbarBasicExample" onclick="toggleNavbar()">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarBasicExample" class="navbar-menu">
+                <div class="navbar-start navbar-center">
+                    <a class="navbar-item home" href="/">Home</a>
+                    <a class="navbar-item" href="/discover">Discover</a>
+                    {% if logged_in %}
+                    {% if is_admin %}
+                    <a class="navbar-item" href="/wisata/bookings">Cek Pesanan</a>
+                    {% else %}
+                    <a class="navbar-item" href="/cekpesanan/{{user_info.name}}">Cek Pesanan</a>
+                    {% endif %}
+                    {% endif %}
+                </div>
+
+                {% if not logged_in %}
+                <div class="navbar-end navbar-auth">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-masuk" href="/signin">Masuk</a>
+                            <a class="button is-daftar" href="/signup">Daftar</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if logged_in %}
+                <div class="navbar-end navbar-auth">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-user-info">{{ user_info.name }}</a>
+                            <a class="button is-btn-delete" onclick="sign_out()">Logout</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </nav>
+        <div class="content-main">
+            <div class="container">
+                <table class="table is-fullwidth" id="bookingTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Wisata</th>
+                            <th>Jumlah Tiket</th>
+                            <th>Total Bayar</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td>{{ booking.name }}</td>
+                            <td>{{ booking.wisata }}</td>
+                            <td>{{ booking.num_tickets }}</td>
+                            <td>{{ booking.total_price }}</td>
+                            <td>
+                                <div class="dropdown is-hoverable">
+                                    <div class="dropdown-trigger">
+                                        <button class="button {% if booking.status == 'Pending' %}
+                                        btn-status-pending
+                                    {% elif booking.status == 'Cancel' %}
+                                        btn-status-cancel
+                                    {% elif booking.status == 'Approve' %}
+                                        btn-status-approve
+                                    {% endif %}" aria-haspopup=" true" aria-controls="dropdown-menu" style="width: 100px;">
+                                            <span>{{ booking.status }}</span>
+                                            <span class="icon is-small">
+                                                <i class="fas fa-angle-down" aria-hidden="true"></i>
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                                        <div class="dropdown-content">
+                                            <a onclick="updateStatus('Pending','{{booking._id}}')"
+                                                class="dropdown-item">Pending</a>
+                                            <a onclick="updateStatus('Cancel','{{booking._id}}')"
+                                                class="dropdown-item">Cancel</a>
+                                            <a onclick="updateStatus('Approve','{{booking._id}}')"
+                                                class="dropdown-item">Approve</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <footer class="section footer">
+        <div class="container">
+            <div class="pb-5 is-flex is-flex-wrap-wrap is-justify-content-between is-align-items-center">
+                <div class="mr-auto mb-2">
+                    <a class="is-inline-block" href="/">
+                        <img class="image" src="../static/WisataKita.png" alt="" width="96px"></a>
+                </div>
+                <div>
+                    <ul class="is-flex is-flex-wrap-wrap is-align-items-center is-justify-content-center">
+                        <li class="mr-4"><a class="button is-footer-link" href="/">Home</a></li>
+                        <li class="mr-4"><a class="button is-footer-link" href="/discover">Discover</a></li>
+                        {% if logged_in %}
+                        {% if is_admin %}
+                        <li class="mr-4"><a class="button is-footer-link" href="/wisata/bookings">Cek Pesanan</a></li>
+                        {% else %}
+                        <li class="mr-4"><a class="button is-footer-link" href="/cekpesanan/{{user_info.name}}">Cek Pesanan</a></li>
+                        {% endif %}
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="pt-5" style="border-top: 1px solid #dee2e6;"></div>
+        <div class="container">
+            <div class="is-flex-tablet is-justify-content-between is-align-items-center">
+                <p>All rights reserved © WisataKita 2023</p>
+                <div class="py-2 is-hidden-tablet"></div>
+                <div class="ml-auto">
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/facebook-light.svg" alt=""></a>
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/twitter-light.svg" alt=""></a>
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/instagram-light.svg" alt=""></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

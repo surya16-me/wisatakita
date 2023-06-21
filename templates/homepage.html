@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='logo-mentah.ico') }}" type="image/x-icon" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>WisataKita | Home</title>
+</head>
+<script>
+    function toggleNavbar() {
+        let target = $('#navbarBasicExample');
+        $('.navbar-burger').toggleClass('is-active');
+        target.toggleClass('is-active');
+    }
+
+    $(document).ready(function () {
+        get_wisata_four();
+    });
+
+    function get_wisata_four() {
+        $.ajax({
+            url: "/wisata",
+            type: "GET",
+            dataType: "json",
+            success: function (response) {
+                let wisataList = response;
+
+                $('#wisata-list').empty();
+
+                // Iterate over the wisataList and append the data to the div
+                for (let i = 0; i < wisataList.length; i++) {
+                    if (i >= 4) {
+                        break;
+                    }
+                    let attraction = wisataList[i];
+                    let html = '<div class="column is-3"><div class="card is-shady" style="height: 400px; border-radius: 20px"><div class="card-image has-text-centered"><img src="/' + attraction.image_wisata + '" alt="Image 3" class="is-3by2" style="width: 100%; height: 200px; object-fit: cover; border-radius: 20px 20px 0 0"></div><div class="card-content"><div class="content"><h4>' + attraction.name + '</h4><p>' + attraction.description + '</p><p><a href="/wisata/' + attraction.id + '">Cek Selengkapnya</a></p></div></div></div></div>'
+                    $('#wisata-list').append(html);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            }
+        });
+    }
+</script>
+
+<style>
+    .bg-nav {
+        background-image: url('../static/nav-img.png');
+        border-radius: 0px 0px 30px 30px;
+        background-position: left top;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: scroll;
+        background-blend-mode: normal;
+        will-change: transform;
+        height: 400px;
+    }
+
+    .navbar {
+        padding: 1rem;
+        background-color: transparent;
+    }
+
+    .navbar-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-grow: 1;
+    }
+
+    .navbar-item {
+        margin-left: 1rem;
+        color: white;
+        border-radius: 20px;
+    }
+
+    .is-lihat {
+        background-color: #EDF1D6;
+        color: #40513B;
+        border-radius: 10px;
+        border: none;
+        font-weight: bold;
+        height: 50px;
+        margin-top: 2.5rem;
+    }
+
+    .is-lihat:hover {
+        background-color: #dfeb9a;
+    }
+
+    .is-daftar {
+        background-color: #609966;
+        color: white;
+        border-radius: 20px;
+        border: none;
+    }
+
+    .is-daftar:hover {
+        background-color: white;
+    }
+
+    .is-masuk {
+        background-color: transparent;
+        color: white;
+        border: none;
+    }
+
+    .is-masuk:hover {
+        background-color: white;
+        border-radius: 20px;
+    }
+
+    .is-btn-delete {
+        background-color: #FF0060;
+        border-radius: 20px;
+        color: white;
+        border: none;
+    }
+
+    .is-btn-delete:hover {
+        background-color: #ee035d;
+        color: white;
+    }
+
+    .navbar-burger {
+        color: #609966;
+    }
+
+    .navbar-burger:hover {
+        color: white;
+    }
+
+    .is-light {
+        color: white;
+    }
+
+    .content-main {
+        margin-left: 2.5rem;
+        margin-top: 2.5rem;
+        margin-right: 2.5rem;
+    }
+
+    .perintah {
+        margin-bottom: 2.5rem;
+    }
+
+    .promosi {
+        margin-top: 2.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .card-content {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+        overflow: hidden;
+    }
+
+    .card-content p {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        max-height: 3.6em;
+        line-height: 1.2em;
+    }
+
+    footer {
+        bottom: 0;
+        background-color: #40513B;
+    }
+
+    .is-footer-link {
+        background-color: transparent;
+        color: white;
+        border: none;
+    }
+
+    .is-footer-link:hover {
+        color: #EDF1D6;
+    }
+
+    .is-user-info {
+        background-color: transparent;
+        border: none;
+        color: white;
+    }
+
+    .is-user-info:hover {
+        background-color: white;
+        border: none;
+        color: #40513B;
+        border-radius: 20px;
+    }
+
+    @media screen and (max-width: 768px) {
+        .navbar-start {
+            flex-direction: column;
+            margin-left: 0;
+            align-items: start;
+            margin-right: 2.5rem;
+            margin-top: 1rem;
+        }
+
+        .is-4 {
+            width: 80px;
+        }
+
+        .is-daftar {
+            color: #40513B;
+            background-color: #EDF1D6;
+        }
+
+        .is-daftar:hover {
+            background-color: #40513B;
+            color: white;
+        }
+
+        .navbar-item {
+            color: #40513B;
+        }
+
+        .is-masuk {
+            border-radius: 20px;
+            background-color: #40513B;
+            color: #EDF1D6;
+        }
+
+        .is-masuk:hover {
+            color: #40513B;
+            background-color: #EDF1D6;
+        }
+
+        .image-liburan {
+            width: 100%;
+        }
+
+        .is-user-info {
+            background-color: transparent;
+            border: none;
+            color: #40513B;
+        }
+
+        .is-user-info:hover{
+            background-color: #40513B;
+            border: none;
+            color: white;
+            border-radius: 20px;
+        }
+    }
+</style>
+
+<body>
+
+    <div class="bg-nav">
+        <nav class="navbar" id="navbar" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">
+                    <img src="../static/WisataKita.png" alt="" class="title is-4 is-logo">
+                </a>
+
+                <!-- Toggle button for mobile -->
+                <a role="button" class="navbar-burger is-light" aria-label="menu" aria-expanded="false"
+                    data-target="navbarBasicExample" onclick="toggleNavbar()">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarBasicExample" class="navbar-menu">
+                <div class="navbar-start navbar-center">
+                    <a class="navbar-item home" href="/">Home</a>
+                    <a class="navbar-item" href="/discover">Discover</a>
+                    {% if logged_in %}
+                    {% if is_admin %}
+                    <a class="navbar-item" href="/wisata/bookings">Cek Pesanan</a>
+                    {% else %}
+                    <a class="navbar-item" href="/cekpesanan/{{user_info.name}}">Cek Pesanan</a>
+                    {% endif %}
+                    {% endif %}
+                </div>
+
+                {% if not logged_in %}
+                <div class="navbar-end navbar-auth">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-masuk" href="/signin">Masuk</a>
+                            <a class="button is-daftar" href="/signup">Daftar</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if logged_in %}
+                <div class="navbar-end navbar-auth">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-user-info">{{ user_info.name }}</a>
+                            <a class="button is-btn-delete" onclick="sign_out()">Logout</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </nav>
+
+        <section class="section">
+            <div class="container">
+                <div class="columns is-centered">
+                    <div class="column is-half">
+                        <div class="jumbotron">
+                            <h2 class="title is-3 has-text-centered is-light"><span class="has-text-weight-light">Hai
+                                    kamu, </span> mau healing ke mana?</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="content-main">
+        <section class="">
+            <div class="intro perintah">
+                <h2 class="title">Temukan destinasi menarik</h2>
+                <p class="subtitle is-6">Bingung mau healing kemana? Coba cari disini aja</p>
+            </div>
+            <div class="columns features" id="wisata-list">
+                <!-- Append html dari js -->
+            </div>
+            <div class="columns is-centered">
+                <div class="column is-half-tablet">
+                    <div class="has-text-centered">
+                        <div>
+                            <a href="/discover" class="button is-lihat">Lihat Semua</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="promosi">
+            <div class="columns">
+                <div class="column is-4 image image-liburan">
+                    <img src="../static/liburan.png" alt="">
+                </div>
+                <div class="column is-8 content">
+                    <h2 class="title">Mau healing kok malah pusing, capek antri beli tiket?</h2>
+                    <p style="text-align: justify;">Nikmati pengalaman beli tiket yang lebih mudah dan
+                        nyaman dengan website kami!
+                        Lupakan kelelahan antri di loket tiket konvensional, karena dengan layanan kami,
+                        Anda dapat membeli tiket favorit Anda secara online dengan beberapa kali klik
+                        saja. Tinggalkan pusing dan capek di belakang, dan rasakan kemudahan dalam
+                        mendapatkan tiket untuk destinasi liburan impian Anda. Dengan antarmuka yang
+                        user-friendly, harga yang kompetitif, dan opsi pembayaran yang fleksibel, kami
+                        menawarkan solusi terbaik untuk kebutuhan tiket Anda. Jadi, kunjungi website
+                        kami sekarang dan buatlah momen berharga tanpa harus khawatir lagi!</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="section">
+        <div class="container">
+            <div class="pb-5 is-flex is-flex-wrap-wrap is-justify-content-between is-align-items-center">
+                <div class="mr-auto mb-2">
+                    <a class="is-inline-block" href="/">
+                        <img class="image" src="../static/WisataKita.png" alt="" width="96px"></a>
+                </div>
+                <div>
+                    <ul class="is-flex is-flex-wrap-wrap is-align-items-center is-justify-content-center">
+                        <li class="mr-4"><a class="button is-footer-link" href="/">Home</a></li>
+                        <li class="mr-4"><a class="button is-footer-link" href="/discover">Discover</a></li>
+                        {% if logged_in %}
+                        {% if is_admin %}
+                        <li class="mr-4"><a class="button is-footer-link" href="/wisata/bookings">Cek Pesanan</a></li>
+                        {% else %}
+                        <li class="mr-4"><a class="button is-footer-link" href="/cekpesanan/{{user_info.name}}">Cek Pesanan</a></li>
+                        {% endif %}
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="pt-5" style="border-top: 1px solid #dee2e6;"></div>
+        <div class="container">
+            <div class="is-flex-tablet is-justify-content-between is-align-items-center">
+                <p>All rights reserved © WisataKita 2023</p>
+                <div class="py-2 is-hidden-tablet"></div>
+                <div class="ml-auto">
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/facebook-light.svg" alt=""></a>
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/twitter-light.svg" alt=""></a>
+                    <a class="mr-4 is-inline-block" href="#">
+                        <img src="../static/socials/instagram-light.svg" alt=""></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+</body>
+
+</html>
