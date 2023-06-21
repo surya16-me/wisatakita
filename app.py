@@ -6,11 +6,11 @@ from datetime import datetime
 from bson import ObjectId
 import os
 import jwt
-import locale
 from datetime import datetime, timedelta
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 import io
+from babel.numbers import format_currency
 
 # client = MongoClient('mongodb://localhost:27017')
 client = MongoClient('mongodb://surya:surya@ac-q3ppb07-shard-00-00.ovgnl6x.mongodb.net:27017,ac-q3ppb07-shard-00-01.ovgnl6x.mongodb.net:27017,ac-q3ppb07-shard-00-02.ovgnl6x.mongodb.net:27017/?ssl=true&replicaSet=atlas-dd9kbd-shard-0&authSource=admin&retryWrites=true&w=majority')
@@ -21,7 +21,6 @@ app = Flask(__name__)
 SECRET_KEY = 'secret1141'
 TOKEN_KEY = 'mytoken'
 
-locale.setlocale(locale.LC_ALL, 'en_US')
 
 @app.route('/', methods = ['GET'])
 def main():
@@ -113,7 +112,7 @@ def add_wisata():
     filename = f'static/images/wisata-{name}-{mytime}.{extension}'
     file.save(filename)
     price = float(request.form.get('price'))
-    formatted_price = locale.currency(price, grouping=True)
+    formatted_price = format_currency(price, 'IDR', locale='id_ID')
     db.wisata.insert_one({
         'name' : name,
         'description' : description,
@@ -170,7 +169,7 @@ def edit_wisata(id):
         filename = existing_wisata.get('image_wisata')
 
     price = float(request.form.get('price'))
-    formatted_price = locale.currency(price, grouping=True)
+    formatted_price = format_currency(price, 'IDR', locale='id_ID')
 
     # Update data database
     db.wisata.update_one(
@@ -254,7 +253,7 @@ def book_ticket():
 
     price = attraction.get('price', 0)
     total_price = price * num_tickets
-    formatted_price = locale.currency(total_price, grouping=True)
+    formatted_price = format_currency(price, 'IDR', locale='id_ID')
 
     # Record data booking tiket pengunjung
     db.bookings.insert_one({
