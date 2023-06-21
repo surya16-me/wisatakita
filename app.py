@@ -21,7 +21,7 @@ app = Flask(__name__)
 SECRET_KEY = 'secret1141'
 TOKEN_KEY = 'mytoken'
 
-locale.setlocale(locale.LC_ALL, 'id_ID')
+locale.setlocale(locale.LC_ALL, 'en_US')
 
 @app.route('/', methods = ['GET'])
 def main():
